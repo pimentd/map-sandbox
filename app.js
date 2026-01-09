@@ -712,24 +712,28 @@ function startQuiz() {
 function onSvgClick(e) {
   if (!state.svgEl) return;
 
-  // Find the closest element with an id (many maps use paths inside <g id="xx">)
-  const withId = e.target && e.target.closest ? e.target.closest("[id]") : null;
-  if (!withId) return;
+  // Walk upward until we find a parent whose id is a real country id
+  let el = e.target;
 
-  const id = withId.id;
-  if (!id) return;
+  while (el && el !== state.svgEl) {
+    const id = el.id;
 
-  // Ignore anything not in our quiz dataset
-  if (!byId.has(id)) return;
+    if (
+      id &&
+      byId.has(id) &&
+      !disabledSet.has(id) &&
+      countryEls.has(id)
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleCountryClick(id);
+      return;
+    }
 
-  // Ignore disabled islands and any missing mappings
-  if (disabledSet.has(id)) return;
-  if (!countryEls.has(id)) return;
-
-  e.preventDefault();
-  e.stopPropagation();
-  handleCountryClick(id);
+    el = el.parentElement;
+  }
 }
+
 
 // ---------------- Load SVG ----------------
 async function loadSVG() {
