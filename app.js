@@ -1,4 +1,4 @@
-// app.js — refactored for clarity + efficiency (same behavior)
+// app.js — refactored for clarity + efficiency (same behavior) + country labels after correct answers
 
 // ---------------- Data ----------------
 const COUNTRIES = [
@@ -100,6 +100,10 @@ const hitTargets = new Map();
 // Cached bboxes in SVG viewBox coordinates: id -> {x,y,w,h}
 const bboxCache = new Map();
 
+// Labels: id -> <g> wrapper (so we can remove/clear fast)
+const labels = new Map();
+let labelsLayer = null;
+
 // ---------------- UI Helpers ----------------
 function setStatus(text) {
   mapStatus.textContent = text;
@@ -149,7 +153,6 @@ function getPaintTargets(rootEl) {
   if (!rootEl) return [];
   const tag = (rootEl.tagName || "").toLowerCase();
 
-  // If it's a group, use children; otherwise just the element
   if (tag === "g") {
     const inner = rootEl.querySelectorAll("path, polygon, rect, circle, ellipse, polyline, line");
     return inner.length ? Array.from(inner) : [rootEl];
@@ -171,7 +174,6 @@ function removeClassFromTargets(id, className) {
 }
 
 function resetClasses() {
-  // "country" is added once at load time; we only clear quiz-state classes here
   for (const { id } of COUNTRIES) {
     removeClassFromTargets(id, "wrong");
     removeClassFromTargets(id, "correct");
@@ -390,7 +392,6 @@ function speak(text) {
 
   setTimeout(() => { try { synth.speak(u); } catch (_) {} }, 40);
 
-  // fallback retry (same behavior)
   setTimeout(() => {
     if (!started && !synth.speaking) {
       try {
@@ -566,9 +567,149 @@ function addHitCircleForCountry(id, radius) {
 }
 
 function buildClickHelperRings() {
-  // Only add rings if those shapes exist in the SVG
-  if (countryEls.has("bs")) addHitCircleForCountry("bs", 45); // Bahamas
-  if (countryEls.has("tt")) addHitCircleForCountry("tt", 40); // Trinidad & Tobago
+  if (countryEls.has("bs")) addHitCircleForCountry("bs", 45);
+  if (countryEls.has("tt")) addHitCircleForCountry("tt", 40);
+}
+
+// ---------------- Labels (after correct) ----------------
+function ensureLabelsLayer() {
+  const svgEl = state.svgEl;
+  if (!svgEl) return null;
+
+  if (labelsLayer && labelsLayer.ownerSVGElement === svgEl) return labelsLayer;
+
+  labelsLayer = svgEl.querySelector("#labelsLayer");
+  if (!labelsLayer) {
+    labelsLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    labelsLayer.setAttribute("id", "labelsLayer");
+    // Put labels on top
+    svgEl.appendChild(labelsLayer);
+  }
+  return labelsLayer;
+}
+
+function clearAllLabels() {
+  for (const [, g] of labels) {
+    if (g && g.parentNode) g.parentNode.removeChild(g);
+  }
+  labels.clear();
+}
+
+function removeLabel(id) {
+  const g = labels.get(id);
+  if (g && g.parentNode) g.parentNode.removeChild(g);
+  labels.delete(id);
+}
+
+function parseViewBox(vbStr) {
+  if (!vbStr) return null;
+  const parts = vbStr.trim().split(/\s+/).map(Number);
+  if (parts.length !== 4 || parts.some(n => !Number.isFinite(n))) return null;
+  return { x: parts[0], y: parts[1], w: parts[2], h: parts[3] };
+}
+
+function clamp(n, lo, hi) {
+  return Math.max(lo, Math.min(hi, n));
+}
+
+function makeSvgText(text) {
+  const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  t.textContent = text;
+  t.setAttribute("text-anchor", "middle");
+  t.setAttribute("dominant-baseline", "middle");
+  t.classList.add("country-label");
+  return t;
+}
+
+function tryPlaceLabelInside(g, labelText, bbox) {
+  const cx = bbox.x + bbox.w / 2;
+  const cy = bbox.y + bbox.h / 2;
+
+  const t = makeSvgText(labelText);
+  t.setAttribute("x", String(cx));
+  t.setAttribute("y", String(cy));
+
+  if (bbox.w < 140 || bbox.h < 90) t.classList.add("small");
+
+  g.appendChild(t);
+
+  let textWidth = 0;
+  let textHeight = 0;
+  try {
+    textWidth = t.getComputedTextLength();
+    const tb = t.getBBox();
+    textHeight = tb.height;
+  } catch {
+    return false;
+  }
+
+  const padX = bbox.w * 0.12;
+  const padY = bbox.h * 0.18;
+
+  const fits =
+    textWidth <= (bbox.w - padX) &&
+    textHeight <= (bbox.h - padY);
+
+  if (!fits) g.removeChild(t);
+  return fits;
+}
+
+function placeLabelOutside(g, labelText, bbox) {
+  const vb = parseViewBox(state.originalViewBox) || { x: 0, y: 0, w: 3000, h: 1700 };
+
+  const cx = bbox.x + bbox.w / 2;
+  const cy = bbox.y + bbox.h / 2;
+
+  const dirX = (cx < vb.x + vb.w / 2) ? -1 : 1;
+  const dirY = (cy < vb.y + vb.h / 2) ? -1 : 1;
+
+  const lx = cx + dirX * (bbox.w * 0.65 + 90);
+  const ly = cy + dirY * (bbox.h * 0.25 + 50);
+
+  const labelX = clamp(lx, vb.x + 80, vb.x + vb.w - 80);
+  const labelY = clamp(ly, vb.y + 60, vb.y + vb.h - 60);
+
+  const startX = cx + dirX * (bbox.w / 2);
+  const startY = cy;
+
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.classList.add("leader-line");
+  line.setAttribute("x1", String(startX));
+  line.setAttribute("y1", String(startY));
+  line.setAttribute("x2", String(labelX));
+  line.setAttribute("y2", String(labelY));
+
+  const t = makeSvgText(labelText);
+  t.setAttribute("x", String(labelX));
+  t.setAttribute("y", String(labelY));
+
+  g.appendChild(line);
+  g.appendChild(t);
+}
+
+function addCountryLabel(id) {
+  const layer = ensureLabelsLayer();
+  if (!layer) return;
+
+  const c = byId.get(id);
+  if (!c) return;
+
+  removeLabel(id);
+
+  const bbox = getCountryBBoxCached(id);
+  if (!bbox) return;
+
+  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  g.setAttribute("data-label-for", id);
+  g.style.pointerEvents = "none";
+
+  const labelText = c.name;
+
+  const placedInside = tryPlaceLabelInside(g, labelText, bbox);
+  if (!placedInside) placeLabelOutside(g, labelText, bbox);
+
+  layer.appendChild(g);
+  labels.set(id, g);
 }
 
 // ---------------- Quiz flow ----------------
@@ -623,6 +764,7 @@ function handleCountryClick(id) {
     if (!state.firstClickUsed) state.score++;
     state.completed.add(id);
     markCorrect(id);
+    addCountryLabel(id);
 
     state.index++;
     setProgressAndPercent();
@@ -658,6 +800,7 @@ function resetToIdle() {
   setStatus("Ready.");
 
   resetClasses();
+  clearAllLabels();
   closeEndModal();
 
   setProgressAndPercent();
@@ -683,7 +826,6 @@ function startQuiz() {
   state.activeCountries = computeActiveCountries(state.mode);
   zoomNextFrame();
 
-  // Only include countries that actually exist in the loaded SVG
   const available = state.activeCountries.filter(c => countryEls.has(c.id));
   state.order = shuffle(available.map(c => c.id));
 
@@ -699,6 +841,7 @@ function startQuiz() {
   restartBtn.disabled = false;
 
   resetClasses();
+  clearAllLabels();
 
   state.startTime = performance.now();
   state.running = true;
@@ -708,22 +851,17 @@ function startQuiz() {
   nextPrompt();
 }
 
-// ---------------- SVG: event delegation ----------------
+// ---------------- SVG: event delegation (FIXED) ----------------
 function onSvgClick(e) {
   if (!state.svgEl) return;
 
-  // Walk upward until we find a parent whose id is a real country id
+  // Walk up until we find an element whose id is a real country id
   let el = e.target;
 
   while (el && el !== state.svgEl) {
     const id = el.id;
 
-    if (
-      id &&
-      byId.has(id) &&
-      !disabledSet.has(id) &&
-      countryEls.has(id)
-    ) {
+    if (id && byId.has(id) && !disabledSet.has(id) && countryEls.has(id)) {
       e.preventDefault();
       e.stopPropagation();
       handleCountryClick(id);
@@ -733,7 +871,6 @@ function onSvgClick(e) {
     el = el.parentElement;
   }
 }
-
 
 // ---------------- Load SVG ----------------
 async function loadSVG() {
@@ -755,12 +892,14 @@ async function loadSVG() {
       state.svgEl.setAttribute("viewBox", state.originalViewBox);
     }
 
-    // Clear maps/caches if hot-reloading / reloading
     countryEls.clear();
     hitTargets.clear();
     bboxCache.clear();
+    clearAllLabels();
 
-    // Wire up country elements by id (no per-country click listeners)
+    // Rebuild label layer handle (the old one is gone when innerHTML is replaced)
+    labelsLayer = null;
+
     for (const { id } of COUNTRIES) {
       const rootEl = mapContainer.querySelector(`#${CSS.escape(id)}`);
       if (!rootEl) continue;
@@ -768,11 +907,9 @@ async function loadSVG() {
       const paintEls = getPaintTargets(rootEl);
       countryEls.set(id, { rootEl, paintEls });
 
-      // Add base class once
       for (const el of paintEls) el.classList.add("country");
     }
 
-    // Disable small islands (optional)
     for (const id of DISABLED_ISLANDS) {
       const rootEl = mapContainer.querySelector(`#${CSS.escape(id)}`);
       if (!rootEl) continue;
@@ -787,7 +924,7 @@ async function loadSVG() {
     // One delegated click listener for the whole svg
     state.svgEl.addEventListener("click", onSvgClick);
 
-    // Cache bboxes once after a layout frame so CTMs are stable
+    // Cache bboxes after layout so CTMs are stable
     requestAnimationFrame(() => {
       for (const { id } of COUNTRIES) getCountryBBoxCached(id);
       buildClickHelperRings();
@@ -797,7 +934,6 @@ async function loadSVG() {
     setStatus("Map loaded.");
     resetClasses();
 
-    // Sync active list + stats
     state.activeCountries = computeActiveCountries(state.mode);
     setProgressAndPercent();
   } catch (err) {
@@ -822,8 +958,6 @@ endModal.addEventListener("click", (e) => {
 });
 
 // SPACEBAR CONTROLS
-// - Idle: Space starts (same as clicking Start)
-// - Running: Space resets to idle (Start Over), does NOT auto-start
 window.addEventListener("keydown", (e) => {
   if (e.code !== "Space") return;
 
@@ -844,7 +978,7 @@ function init() {
   state.activeCountries = computeActiveCountries(state.mode);
   resetToIdle();
   loadSVG();
-  setMode("all"); // preserves your original behavior
+  setMode("all");
 }
 
 init();
