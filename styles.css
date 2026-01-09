@@ -1,0 +1,404 @@
+:root{
+  --bg1:#0a1022;
+  --bg2:#070b14;
+  --stroke: rgba(255,255,255,.10);
+
+  --text: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.70);
+  --muted2: rgba(255,255,255,.55);
+
+  --accent: #7aa7ff;
+  --good: #35d07f;
+  --bad: #ff5c75;
+  --ocean: #78a6da;
+
+  --cardA: rgba(255,255,255,.06);
+  --cardB: rgba(255,255,255,.03);
+  --panel: rgba(0,0,0,.18);
+  --panel2: rgba(0,0,0,.14);
+
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+*{ box-sizing:border-box; }
+
+html, body{
+  height:100%;
+  margin:0;
+  overflow:hidden; /* NO SCROLL */
+  background: radial-gradient(1200px 700px at 20% 0%, #121c3e 0%, var(--bg1) 40%, var(--bg2) 100%);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+/* =========================
+   Layout
+========================= */
+.layout{
+  height:100vh;
+  display:grid;
+  grid-template-columns: 300px 1fr 220px;
+  gap:14px;
+  padding:14px;
+}
+
+/* =========================
+   Rails / Panels
+========================= */
+.rail{
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  padding:14px;
+  background: linear-gradient(180deg, var(--cardA), var(--cardB));
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  overflow:hidden;
+}
+
+.brand-title{
+  font-size:20px;
+  font-weight:900;
+  letter-spacing:.2px;
+  margin:0;
+}
+
+/* =========================
+   Mode buttons
+========================= */
+.modebar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.modebtn{
+  border:1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.18);
+  color: var(--text);
+  padding:8px 12px;
+  border-radius: 999px;
+  cursor:pointer;
+  font-weight:750;
+  font-size:13px;
+}
+
+.modebtn.active{
+  border-color: rgba(122,167,255,.75);
+  box-shadow: 0 0 0 3px rgba(122,167,255,.15);
+}
+
+.btnrow{
+  display:flex;
+  gap:10px;
+}
+
+/* =========================
+   Buttons (base)
+========================= */
+button{
+  border:1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.18);
+  color: var(--text);
+  padding:10px 14px;
+  border-radius: 12px;
+  cursor:pointer;
+  font-weight:850;
+  transition: transform 120ms ease, filter 120ms ease, background 120ms ease, box-shadow 120ms ease;
+}
+
+button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  transform:none;
+}
+
+/* Primary button (general) */
+button.primary{
+  background: rgba(53, 208, 127, 0.25);
+  border-color: rgba(53, 208, 127, 0.75);
+  color: #eafff4;
+
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 3px rgba(53, 208, 127, 0.20),
+    0 8px 20px rgba(0,0,0,0.35);
+}
+
+button.primary:hover{
+  background: rgba(53, 208, 127, 0.35);
+  transform: translateY(-1px);
+}
+
+button.primary:active{
+  transform: translateY(0);
+}
+
+/* =========================
+   Prompt
+========================= */
+.prompt-block{
+  padding:14px;
+  background: var(--panel);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius: 16px;
+}
+
+.prompt-label{
+  font-size:12px;
+  color: var(--muted2);
+  letter-spacing:.25em;
+  margin-bottom:8px;
+}
+
+.prompt{
+  font-size:30px;
+  font-weight:950;
+  line-height:1.05;
+  text-shadow: 0 8px 18px rgba(0,0,0,.45);
+}
+
+.subprompt{
+  margin-top:6px;
+  color: var(--muted2);
+  font-size:12px;
+}
+
+/* =========================
+   Right rail stats
+========================= */
+.stats{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.stat{
+  padding:12px;
+  background: var(--panel);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 14px;
+}
+
+.stat-label{
+  font-size:12px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color: var(--muted2);
+  margin-bottom:6px;
+}
+
+.stat-value{
+  font-size:22px;
+  font-weight:950;
+}
+
+.mini-results{
+  margin-top:auto;
+  padding:12px;
+  background: var(--panel2);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius: 14px;
+}
+
+.mini-title{
+  font-weight:900;
+  margin-bottom:8px;
+}
+
+.results{
+  color: var(--muted);
+  font-size:14px;
+  line-height:1.35;
+}
+
+.results.muted{
+  color: var(--muted2);
+}
+
+/* =========================
+   Map area
+========================= */
+.map-area{
+  min-height:0;
+  position:relative;
+  overflow:hidden;
+  border-radius: 18px;
+  border: 1px solid var(--stroke);
+  box-shadow: var(--shadow);
+  background: rgba(255,255,255,.03);
+}
+
+/* Make map fully fill middle column without scroll */
+.map-container{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: var(--ocean);
+}
+
+.map-container svg{
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+/* Status pill */
+.map-status{
+  position:absolute;
+  top:12px;
+  left:12px;
+  z-index:10;
+  padding:8px 12px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.12);
+  font-weight:800;
+  font-size:13px;
+  color: rgba(255,255,255,.85);
+  pointer-events:none;
+}
+
+/* =========================
+   SVG
+========================= */
+.country{
+  fill:#bdbdbd;
+  stroke:#ffffff;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  transition: fill 120ms ease, filter 120ms ease;
+}
+
+.country:hover{ filter: brightness(1.04); }
+
+.correct{ fill: var(--good) !important; }
+.wrong{ fill: var(--bad) !important; }
+.locked{ pointer-events:none; }
+
+.disabled-island{
+  opacity: .45;
+  filter: saturate(.6);
+}
+
+/* CLICK HELP RINGS (Bahamas, Trinidad & Tobago) */
+.hit-target{
+  fill: rgba(0,0,0,0);
+  pointer-events: all;
+  stroke: rgba(0,0,0,.95);
+  stroke-width: 2.5;
+  stroke-dasharray: 7 7;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,.35));
+}
+
+/* =========================
+   Modal
+========================= */
+.modal.hidden{ display:none; }
+.modal{ position:fixed; inset:0; z-index:50; }
+.modal-backdrop{ position:absolute; inset:0; background: rgba(0,0,0,.55); }
+
+.modal-card{
+  position:relative;
+  width:min(760px, calc(100vw - 40px));
+  margin: 8vh auto 0 auto;
+  background: rgba(12,16,32,.92);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius: 22px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.55);
+  overflow:hidden;
+}
+
+.modal-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+
+.modal-title{ font-weight:950; font-size:20px; }
+.modal-close{ width:40px; height:40px; border-radius: 12px; }
+
+.modal-body{
+  padding:22px 22px 26px 22px;
+  text-align:center;
+}
+
+.biglabel{
+  color: rgba(255,255,255,.70);
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  font-size:12px;
+  margin-bottom:6px;
+}
+
+.bigvalue{
+  font-size:56px;
+  font-weight:950;
+}
+
+.perfect.hidden{ display:none; }
+.fireworks{ font-size:56px; }
+.perfect-text{ margin-top:8px; font-weight:900; font-size:18px; }
+
+.confetti{
+  width:100%;
+  height:160px;
+  margin-top:18px;
+  display:block;
+  border-radius: 16px;
+  border: 1px dashed rgba(255,255,255,.10);
+}
+
+/* =========================
+   START button (big + solid green)
+   Keep this as an ID override to preserve exact look.
+========================= */
+#startBtn{
+  width: 100%;
+  min-height: 96px;              /* ~2x taller */
+  padding: 22px 18px;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+
+  background: #16a34a;           /* solid green */
+  border: 2px solid #0f7a33;
+  color: #ffffff;
+
+  border-radius: 18px;
+  box-shadow:
+    0 10px 26px rgba(0,0,0,.35),
+    0 0 0 4px rgba(22,163,74,.22);
+}
+
+#startBtn:hover{
+  filter: brightness(1.06);
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.38),
+    0 0 0 5px rgba(22,163,74,.28);
+}
+
+#startBtn:active{
+  transform: translateY(1px);
+  filter: brightness(.98);
+}
+
+#startBtn:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+  filter: none;
+  transform: none;
+}
