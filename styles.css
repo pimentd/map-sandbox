@@ -301,6 +301,29 @@ button.primary:active{
   filter: drop-shadow(0 3px 8px rgba(0,0,0,.35));
 }
 
+/* Labels added after correct answers */
+.country-label{
+  font-weight: 900;
+  font-size: 26px;
+  fill: rgba(255,255,255,.95);
+  paint-order: stroke;
+  stroke: rgba(0,0,0,.75);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.country-label.small{
+  font-size: 22px;
+}
+
+.leader-line{
+  stroke: rgba(0,0,0,.70);
+  stroke-width: 3px;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
 /* =========================
    Modal
 ========================= */
@@ -363,18 +386,17 @@ button.primary:active{
 
 /* =========================
    START button (big + solid green)
-   Keep this as an ID override to preserve exact look.
 ========================= */
 #startBtn{
   width: 100%;
-  min-height: 96px;              /* ~2x taller */
+  min-height: 96px;
   padding: 22px 18px;
   font-size: 26px;
   font-weight: 900;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 
-  background: #16a34a;           /* solid green */
+  background: #16a34a;
   border: 2px solid #0f7a33;
   color: #ffffff;
 
