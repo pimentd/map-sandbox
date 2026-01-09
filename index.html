@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Americas Map Quiz</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div id="app" class="layout">
+    <!-- LEFT RAIL: controls + prompt -->
+    <aside class="rail rail-left" aria-label="Quiz controls">
+      <header class="brand">
+        <h1 class="brand-title">Americas Map Quiz</h1>
+      </header>
+
+      <nav class="modebar" id="modebar" aria-label="Region mode">
+        <button class="modebtn active" type="button" data-mode="all">All Americas</button>
+        <button class="modebtn" type="button" data-mode="caribbean">Caribbean</button>
+        <button class="modebtn" type="button" data-mode="central">Central America</button>
+        <button class="modebtn" type="button" data-mode="south">South America</button>
+      </nav>
+
+      <div class="btnrow" role="group" aria-label="Quiz actions">
+        <button id="startBtn" class="primary" type="button">Start</button>
+        <button id="restartBtn" class="secondary" type="button" disabled>Restart</button>
+      </div>
+
+      <section class="prompt-block" aria-label="Current prompt">
+        <div class="prompt-label">CLICK:</div>
+        <div id="prompt" class="prompt" aria-live="polite">—</div>
+        <div id="subprompt" class="subprompt" aria-live="polite"></div>
+      </section>
+    </aside>
+
+    <!-- MAP -->
+    <main class="map-area" aria-label="Map">
+      <div id="mapStatus" class="map-status" aria-live="polite">Loading map…</div>
+      <div id="mapContainer" class="map-container"></div>
+    </main>
+
+    <!-- RIGHT RAIL: stats -->
+    <aside class="rail rail-right" aria-label="Quiz stats">
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Time</div>
+          <div id="timer" class="stat-value" aria-live="polite">0.0s</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Percent</div>
+          <div id="percent" class="stat-value" aria-live="polite">0%</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Progress</div>
+          <div id="progress" class="stat-value" aria-live="polite">0 / 0</div>
+        </div>
+      </div>
+
+      <section class="mini-results" aria-label="Results">
+        <div class="mini-title">Results</div>
+        <div id="results" class="results muted" aria-live="polite">Press Start to begin.</div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- END-OF-QUIZ MODAL -->
+  <div
+    id="endModal"
+    class="modal hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="endTitle"
+  >
+    <div class="modal-backdrop"></div>
+
+    <div class="modal-card" role="document">
+      <div class="modal-top">
+        <div class="modal-title" id="endTitle">Quiz Complete</div>
+        <button id="closeModalBtn" class="modal-close" type="button" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="bigline">
+          <div class="biglabel">Percent Correct</div>
+          <div id="finalPercent" class="bigvalue">—</div>
+        </div>
+
+        <div class="bigline">
+          <div class="biglabel">Time</div>
+          <div id="finalTime" class="bigvalue">—</div>
+        </div>
+
+        <div id="perfectBox" class="perfect hidden" aria-live="polite">
+          <div class="fireworks" aria-hidden="true">🎆🎇🎆</div>
+          <div class="perfect-text">Perfect score!</div>
+        </div>
+
+        <canvas id="confettiCanvas" class="confetti"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
